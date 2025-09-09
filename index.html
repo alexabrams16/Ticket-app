@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ticket</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ffffff">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background: white;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 20px;
+      font-size: 18px;
+    }
+    .ticket-info {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin: 20px 0;
+    }
+    .box {
+      border: 2px solid black;
+      border-radius: 8px;
+      padding: 10px;
+      width: 120px;
+      text-align: center;
+    }
+    .qr {
+      font-size: 12px;
+    }
+    .interstate {
+      color: red;
+      font-weight: bold;
+      font-size: 28px;
+      margin-top: 10px;
+    }
+    .zone {
+      margin: 20px auto;
+      padding: 15px;
+      border-radius: 12px;
+      width: 70%;
+      color: black;
+      background: linear-gradient(to right, #c87fc9, #ffffff, #c87fc9);
+    }
+    .zone .big-number {
+      font-size: 72px;
+      font-weight: bold;
+    }
+    .zone .subtitle {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .zone .note {
+      font-size: 14px;
+    }
+    .datetime {
+      margin-top: 40px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .bar {
+      margin: 20px auto;
+      width: 90%;
+      height: 20px;
+      display: flex;
+    }
+    .bar div {
+      flex: 1;
+    }
+    .bar .part1 { background: #a44; }
+    .bar .part2 { background: #4a4; }
+    .bar .part3 { background: #c4c; }
+    .expires {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .footer {
+      display: flex;
+      justify-content: space-around;
+      font-size: 14px;
+      color: gray;
+      border-top: 1px solid #ccc;
+      padding: 10px 0;
+    }
+    .footer .active {
+      color: blue;
+      font-weight: bold;
+    }
+    .controls {
+      margin-top: 20px;
+    }
+    select, input {
+      font-size: 16px;
+      padding: 5px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div id="time-top">--:--</div>
+    <div>LTE 🔋</div>
+  </div>
+
+  <div class="ticket-info">
+    <div class="box">
+      <div>One Way</div>
+      <div style="font-weight:bold; font-size:20px;">1 Adult</div>
+    </div>
+    <div>
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=sample" alt="QR Code">
+      <div class="qr">Tap to enlarge</div>
+    </div>
+  </div>
+
+  <div class="interstate">INTERSTATE</div>
+
+  <div class="zone" id="zone-box">
+    <div class="big-number">6</div>
+    <div class="subtitle">ZONE RIDE</div>
+    <div class="note">**Not Valid for HBLR**</div>
+  </div>
+
+  <!-- Dropdown controls -->
+  <div class="controls">
+    <label for="colorSelect">Choose a color style:</label>
+    <select id="colorSelect">
+      <option value="default">Purple Gradient</option>
+      <option value="blue">Blue Gradient</option>
+      <option value="green">Green Gradient</option>
+      <option value="fire">Fire Gradient</option>
+      <option value="custom">Custom (random)</option>
+    </select>
+  </div>
+
+  <div class="controls">
+    <label for="dateSelect">Choose date:</label>
+    <select id="dateSelect">
+      <option value="today">Today</option>
+      <option value="tomorrow">Tomorrow</option>
+      <option value="custom">Custom…</option>
+    </select>
+    <input type="date" id="customDate" style="display:none;">
+  </div>
+
+  <div>View Validator Instructions</div>
+
+  <div class="datetime">
+    <div id="clock">--:--:--</div>
+    <div id="date">Sunday, Sep 07, 2025</div>
+  </div>
+
+  <div class="bar">
+    <div class="part1"></div>
+    <div class="part2"></div>
+    <div class="part3"></div>
+  </div>
+
+  <div class="expires" id="expires">Expires in 00:54:00</div>
+
+  <div class="footer">
+    <div>⭐ Favorites</div>
+    <div class="active">🎟 My Tickets</div>
+    <div>🏠 Home</div>
+    <div>📍 Rider Tools</div>
+    <div>⋯ More</div>
+  </div>
+
+<script>
+  function updateClock() {
+    let now = new Date();
+    document.getElementById("time-top").textContent =
+      now.getHours() + ":" + now.getMinutes().toString().padStart(2,'0');
+    document.getElementById("clock").textContent =
+      now.toLocaleTimeString();
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ========== DATE HANDLING ==========
+  function formatDate(d) {
+    return d.toLocaleDateString("en-US", { weekday:"long", month:"short", day:"2-digit", year:"numeric" });
+  }
+
+  function setDateDisplay(value) {
+    document.getElementById("date").textContent = value;
+  }
+
+  document.getElementById("dateSelect").addEventListener("change", function() {
+    let choice = this.value;
+    let customInput = document.getElementById("customDate");
+    if (choice === "today") {
+      setDateDisplay(formatDate(new Date()));
+      customInput.style.display = "none";
+    } else if (choice === "tomorrow") {
+      let tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      setDateDisplay(formatDate(tomorrow));
+      customInput.style.display = "none";
+    } else if (choice === "custom") {
+      customInput.style.display = "inline";
+    }
+  });
+
+  document.getElementById("customDate").addEventListener("change", function() {
+    let d = new Date(this.value);
+    if (!isNaN(d)) {
+      setDateDisplay(formatDate(d));
+    }
+  });
+
+  // Set default date
+  setDateDisplay(formatDate(new Date()));
+
+  // ========== COUNTDOWN TIMER ==========
+  let totalSeconds = 54 * 60; // start from 54:00
+
+  function updateTimer() {
+    if (totalSeconds >= 0) {
+      let m = Math.floor(totalSeconds / 60).toString().padStart(2,'0');
+      let s = (totalSeconds % 60).toString().padStart(2,'0');
+      document.getElementById("expires").textContent = `Expires in 00:${m}:${s}`;
+      totalSeconds--;
+    }
+  }
+  setInterval(updateTimer, 1000);
+  updateTimer();
+
+  // ========== COLOR HANDLING ==========
+  function setZoneGradient(color1, color2, color3) {
+    document.getElementById("zone-box").style.background =
+      `linear-gradient(to right, ${color1}, ${color2}, ${color3})`;
+  }
+
+  document.getElementById("colorSelect").addEventListener("change", function() {
+    let choice = this.value;
+    if (choice === "default") {
+      setZoneGradient("#c87fc9", "#ffffff", "#c87fc9");
+    } else if (choice === "blue") {
+      setZoneGradient("#3a7bd5", "#ffffff", "#00d2ff");
+    } else if (choice === "green") {
+      setZoneGradient("#56ab2f", "#ffffff", "#a8e063");
+    } else if (choice === "fire") {
+      setZoneGradient("#ff512f", "#ffffff", "#dd2476");
+    } else if (choice === "custom") {
+      function randColor() {
+        return '#' + Math.floor(Math.random()*16777215).toString(16);
+      }
+      setZoneGradient(randColor(), "#ffffff", randColor());
+    }
+  });
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js');
+  }
+</script>
+</body>
+</html>
